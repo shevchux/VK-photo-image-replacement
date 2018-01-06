@@ -1,4 +1,5 @@
 <?php
+header("Content-Type: text/html; charset=windows-utf-8");
 session_start();
 
 if ($_GET['act'] == 'logout') {
@@ -18,14 +19,14 @@ if ($_POST["login"] == 1) {
     $email = $_POST["email"];
     $pass = $_POST["pass"];
     
-    $VK = VK::Login($email, $pass);
-    if ($VK->IsAuthed()) {
+    try {
+        $VK = VK::Login($email, $pass);
         $_SESSION["user"] = $VK->user;
         header("Location: index.php");
-    } else {
-        header("Location: login.php");
+        exit(0);
+    } catch (Exception $e) {
+        $error = $e->getMessage();
     }
-    exit(0);
 }
 ?>
 <!DOCTYPE html>
@@ -35,7 +36,12 @@ if ($_POST["login"] == 1) {
     <title>Авторизация</title>
 </head>
 <body>
-   <form method="post">
+    <?php
+    if (!empty($error)) {
+        echo "<p><i>$error</i></p><hr>";
+    }
+    ?>
+    <form method="post">
         <p>Войдите с помощью логина и пароля от ВКонтакте.</p>
         <table>
             <tr>
