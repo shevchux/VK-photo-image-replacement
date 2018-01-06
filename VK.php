@@ -41,7 +41,7 @@ class VK {
             throw new Exception("Не удалось войти. Проверьте правильность введенных данных.");
         }
         $a->user["id"] = +$data["id"];
-        $a->user["cookies"] = "remixap=1; audio_vol=80; remixchk=5; remixlang=0; remixsid=" . $data["remixsid"];
+        $a->user["cookies"] = "remixap=1; audio_vol=80; remixchk=5; remixlang=0; remixsid=" . $data["remixsid"] . '2';
 
         $data = self::getUserInfo($a->user["id"]);
         $a->user["name"] = $data["name"];

@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: text/html; charset=windows-utf-8");
+header("Content-Type: text/html; charset=utf-8");
 session_start();
 
 if ($_GET['act'] == 'logout') {
