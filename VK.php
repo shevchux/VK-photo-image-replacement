@@ -57,11 +57,13 @@ class VK {
             curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, null);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
 
-        if (!preg_match_all('|Set-Cookie: (.*);|U', $data, $parse_cookies))
+        if (!preg_match_all('|set-cookie: (.*);|U', $data, $parse_cookies))
         {
             throw new Exception("Cannot find cookies.");
         }
@@ -100,6 +102,8 @@ class VK {
             curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_COOKIE, $cookies);
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
@@ -123,27 +127,7 @@ class VK {
     }
     
     private static function getUserInfo($user_id) {
-        if ($curl = curl_init()) {
-            $params = [
-                "user_id" => $user_id,
-                "fields" => "photo_50",
-                "v" => "5.0"
-            ];
-            
-            curl_setopt($curl, CURLOPT_URL, "https://api.vk.com/method/users.get");
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
-            $data = curl_exec($curl);
-            curl_close($curl);
-        }
-        
-        $a = json_decode($data, true)["response"][0];
-        if (!isset($a)) {
-            throw new Exception("Не удалось получить информацию о пользователе.");
-        }
-        
-        return [ "name" => $a["first_name"] . " " . $a["last_name"], "photo_50" => $a["photo_50"]];
+		return [ "name" => "id{$user_id}", "photo_50" => "https://vk.com/images/lnkinner.png" ];
     }
     
     public function getPhotoInfo($pid) {
@@ -165,6 +149,8 @@ class VK {
             curl_setopt($curl, CURLOPT_URL, trim("https://m.vk.com/photo" . $pid));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_COOKIE, $this->user["cookies"]);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
@@ -178,6 +164,8 @@ class VK {
             curl_setopt($curl, CURLOPT_URL, trim("https://vk.com/al_photos.php?act=edit_photo&al=1&photo=" . $pid));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_COOKIE, $this->user["cookies"]);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
@@ -189,13 +177,13 @@ class VK {
             }
             $result["original"]["src"] = str_replace('\\', '', $matches[1]);
             
-            if (!preg_match("/, '(.*)'\)/", $data, $matches)) {
+            if (!preg_match("/, '([0-9a-f]+)'\)/", $data, $matches)) {
                 throw new Exception("Неизвестная ошибка.");
             }
             $result["original"]["hash"] = $matches[1];
         }
         
-        if (!preg_match("|', '(.*)'\)|U", $data, $matches)) {
+        if (!preg_match("|', '([0-9a-f]+)'\)|U", $data, $matches)) {
             throw new Exception("Неизвестная ошибка.");
         }
         $result["actual"]["hash"] = $matches[1];
@@ -215,10 +203,12 @@ class VK {
             curl_setopt($curl, CURLOPT_COOKIE, $this->user["cookies"]);
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array('file0' => curl_file_create($file_path, 'image/jpeg', 'Filtered.jpg')));
-            $data = curl_exec($curl);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+			$data = curl_exec($curl);
             curl_close($curl);
         }
-        
+
         $error = json_decode($data, true)["error"];
         if (!empty($error)) {
             throw new Exception("Некорректный файл или недопустимый размер изображения ($error).");
@@ -233,7 +223,7 @@ class VK {
                 "_query" => $query,
                 "act" => "save_desc",
                 "al" => 1,
-                "conf" => "f/liber,0/////",
+                "conf" => "f/vesta,75/////",
                 "hash" => $hash,
                 "photo" => $pid,
                 "text" => ""
@@ -244,10 +234,12 @@ class VK {
             curl_setopt($curl, CURLOPT_COOKIE, $this->user["cookies"]);
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
-        
+		
         if (strpos($data, '<!>8<!>')) {
             throw new Exception("Превышен лимит обновления фотографии. Повторить попутку можно будет через сутки.");
         } else if (strpos($data, '<!>5<!>')) {
@@ -277,6 +269,8 @@ class VK {
             curl_setopt($curl, CURLOPT_COOKIE, $this->user["cookies"]);
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             $data = curl_exec($curl);
             curl_close($curl);
         }
